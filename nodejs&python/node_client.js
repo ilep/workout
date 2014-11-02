@@ -1,11 +1,23 @@
-var net = require('net'), 
-	port  = 5000, 
-	unix_socket_path = '/var/run/workout.sock';
+var net = require('net')
+  , log = require('npmlog')
+  , sockfile = './communicate.sock'
+  ;
 
+var client = net.connect( { path: sockfile });
 
-
-var client  = net.createConnection(unix_socket_path);
-
-client.on('connect', function(arg){
-	console.log(arg);
-})
+client
+  .on('connect', function () {
+    log.info('client', 'client connected');
+    client.write('hello server');
+  })
+  .on('data', function (data) {
+    log.info('client', 'Data: %s', data.toString());
+    client.end(); 
+  })
+  .on('error', function (err) {
+    log.error('client', err);
+  })
+  .on('end', function () {
+    log.info('client', 'client disconnected');
+  })
+  ;
